@@ -9,33 +9,51 @@ dist/
 web-build/
 expo-env.d.ts
 
-# Native
-.kotlin/
-*.orig.*
+# SQLite & Local Encrypted Database files
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
+# Local environment & secret files
+.env
+.env*
+!.env.example
+
+# Native Keystores & Cryptographic Credentials
 *.jks
+*.keystore
 *.p8
 *.p12
 *.key
+*.pem
+*.bks
 *.mobileprovision
 
-# Metro
+# Generated native build folders
+/android/
+/ios/
+android/
+ios/
+
+# Native temporary files
+.kotlin/
+*.orig.*
+
+# Metro & Bundler
 .metro-health-check*
 
-# debug
+# Debug & Error logs
 npm-debug.*
 yarn-debug.*
 yarn-error.*
+*.log
 
-# macOS
+# OS & Editor files
 .DS_Store
-*.pem
-
-# local env files
-.env*.local
-
-# typescript
+Thumbs.db
+.idea/
+.vscode/
 *.tsbuildinfo
-
-# generated native folders
-/ios
-/android
