@@ -4,6 +4,7 @@ module.exports = {
     es6: true,
     node: true,
     'react-native/react-native': true,
+    jest: true,
   },
   parserOptions: {
     ecmaVersion: 2021,
