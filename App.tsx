@@ -1,16 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import {
   initializeDatabase,
   getCipherVersion,
   closeDatabase,
 } from './src/data/database/SqlCipherClient';
 import { VIEW_STATES } from './src/domain/models/schemas';
+import AppNavigator from './src/presentation/navigation/AppNavigator';
 
 export default function App() {
   const [viewState, setViewState] = useState(VIEW_STATES.LOADING);
-  const [cipherVersion, setCipherVersion] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -21,7 +22,6 @@ export default function App() {
         await initializeDatabase();
         if (isMounted) {
           const version = getCipherVersion();
-          setCipherVersion(version);
           setViewState(VIEW_STATES.SUCCESS);
           console.log(`[App] SQLCipher AES-256 active. Runtime PRAGMA cipher_version: ${version}`);
         }
@@ -42,37 +42,23 @@ export default function App() {
     };
   }, []);
 
-  return (
-    <View style={styles.container}>
-      <StatusBar style="auto" />
-
-      {viewState === VIEW_STATES.LOADING && (
+  if (viewState === VIEW_STATES.LOADING) {
+    return (
+      <View style={styles.container}>
+        <StatusBar style="light" />
         <View style={styles.card}>
           <ActivityIndicator size="large" color="#0A84FF" />
           <Text style={styles.title}>Initializing Encrypted Vault</Text>
           <Text style={styles.subtitle}>Verifying SQLCipher & SecureStore Key...</Text>
         </View>
-      )}
+      </View>
+    );
+  }
 
-      {viewState === VIEW_STATES.SUCCESS && (
-        <View style={styles.card}>
-          <View style={styles.badgeSuccess}>
-            <Text style={styles.badgeText}>SQLCipher AES-256 Active</Text>
-          </View>
-          <Text style={styles.title}>BankStar PFM</Text>
-          <Text style={styles.subtitle}>Offline-First Dual-Currency Personal Finance Monitor</Text>
-          <View style={styles.infoBox}>
-            <Text style={styles.infoLabel}>Database Engine:</Text>
-            <Text style={styles.infoValue}>SQLCipher (Fail-Closed)</Text>
-            <Text style={styles.infoLabel}>PRAGMA cipher_version:</Text>
-            <Text style={styles.infoValue}>{cipherVersion || 'Verified'}</Text>
-            <Text style={styles.infoLabel}>Key Protection:</Text>
-            <Text style={styles.infoValue}>Hardware SecureStore (256-bit)</Text>
-          </View>
-        </View>
-      )}
-
-      {viewState === VIEW_STATES.ERROR && (
+  if (viewState === VIEW_STATES.ERROR) {
+    return (
+      <View style={styles.container}>
+        <StatusBar style="light" />
         <View style={styles.card}>
           <View style={styles.badgeError}>
             <Text style={styles.badgeText}>Security Guardrail Enforced</Text>
@@ -83,8 +69,15 @@ export default function App() {
           </Text>
           <Text style={styles.errorDetails}>{errorMessage}</Text>
         </View>
-      )}
-    </View>
+      </View>
+    );
+  }
+
+  return (
+    <SafeAreaProvider>
+      <StatusBar style="light" />
+      <AppNavigator />
+    </SafeAreaProvider>
   );
 }
 
@@ -105,13 +98,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     borderColor: '#334155',
-  },
-  badgeSuccess: {
-    backgroundColor: '#065F46',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 9999,
-    marginBottom: 16,
   },
   badgeError: {
     backgroundColor: '#991B1B',
@@ -138,26 +124,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#94A3B8',
     textAlign: 'center',
-    marginBottom: 20,
-  },
-  infoBox: {
-    width: '100%',
-    backgroundColor: '#0F172A',
-    borderRadius: 12,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: '#334155',
-  },
-  infoLabel: {
-    fontSize: 12,
-    color: '#64748B',
-    marginTop: 8,
-    fontWeight: '600',
-  },
-  infoValue: {
-    fontSize: 14,
-    color: '#38BDF8',
-    fontWeight: '500',
   },
   errorText: {
     fontSize: 14,
