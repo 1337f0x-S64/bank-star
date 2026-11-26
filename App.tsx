@@ -11,7 +11,7 @@ import { VIEW_STATES } from './src/domain/models/schemas';
 import AppNavigator from './src/presentation/navigation/AppNavigator';
 
 export default function App() {
-  const [viewState, setViewState] = useState(VIEW_STATES.LOADING);
+  const [viewState, setViewState] = useState<string>(VIEW_STATES.LOADING);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
