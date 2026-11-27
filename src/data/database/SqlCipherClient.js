@@ -10,6 +10,7 @@
 
 import * as SQLite from 'expo-sqlite';
 import KeyManager from '../security/KeyManager';
+import { migrateDatabase } from '../migrations/index';
 
 export const DEFAULT_DATABASE_NAME = 'bankstar.db';
 
@@ -44,6 +45,7 @@ export function extractCipherVersion(versionResult) {
  * @param {string} [options.databaseName=DEFAULT_DATABASE_NAME] - Database file name
  * @param {object} [options.keyManager=KeyManager] - Key manager instance
  * @param {Function} [options.openDatabaseAsync=SQLite.openDatabaseAsync] - Database opener
+ * @param {boolean} [options.runMigrations=false] - Whether to execute migrations upon opening
  * @returns {Promise<SQLite.SQLiteDatabase>} Open and verified encrypted database handle
  * @throws {Error} If key retrieval fails, cipher_version is missing/empty, or key authentication fails
  */
@@ -109,6 +111,16 @@ export async function initializeDatabase(options = {}) {
   // 7. Log confirmed runtime SQLCipher version without leaking keys
   console.log(`[SqlCipherClient] PRAGMA cipher_version: ${cipherVersion}`);
 
+  // 8. Run schema migrations if requested (SRS FR-31, FR-30, Section 6.1)
+  if (options.runMigrations) {
+    try {
+      await migrateDatabase(db);
+    } catch (error) {
+      await db.closeAsync().catch(() => {});
+      throw new Error(`FATAL: Database migration failed: ${error.message}`);
+    }
+  }
+
   activeDatabase = db;
   activeCipherVersion = cipherVersion;
 
@@ -171,5 +183,6 @@ export default {
   isInitialized,
   closeDatabase,
   extractCipherVersion,
+  migrateDatabase,
   DEFAULT_DATABASE_NAME,
 };

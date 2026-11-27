@@ -221,4 +221,24 @@ describe('SqlCipherClient (FR-26, FR-28, TC-08)', () => {
       expect(getCipherVersion()).toBeNull();
     });
   });
+
+  describe('Schema Migrations Integration', () => {
+    it('executes migrateDatabase when runMigrations is true', async () => {
+      mockDb.getFirstAsync
+        .mockResolvedValueOnce({ cipher_version: '4.5.7' })
+        .mockResolvedValueOnce({ count: 0 })
+        .mockResolvedValueOnce({ user_version: 0 }); // for getSchemaVersion
+
+      await initializeDatabase({
+        keyManager: mockKeyManager,
+        openDatabaseAsync: jest.fn().mockResolvedValue(mockDb),
+        runMigrations: true,
+      });
+
+      expect(mockDb.execAsync).toHaveBeenCalledWith('PRAGMA foreign_keys = ON;');
+      expect(mockDb.execAsync).toHaveBeenCalledWith('BEGIN TRANSACTION;');
+      expect(mockDb.execAsync).toHaveBeenCalledWith('PRAGMA user_version = 1;');
+      expect(mockDb.execAsync).toHaveBeenCalledWith('COMMIT;');
+    });
+  });
 });

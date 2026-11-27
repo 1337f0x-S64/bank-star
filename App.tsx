@@ -19,7 +19,7 @@ export default function App() {
 
     async function initEncryptedStorage() {
       try {
-        await initializeDatabase();
+        await initializeDatabase({ runMigrations: true });
         if (isMounted) {
           const version = getCipherVersion();
           setViewState(VIEW_STATES.SUCCESS);
